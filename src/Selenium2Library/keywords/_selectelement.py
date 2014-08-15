@@ -92,6 +92,33 @@ class _SelectElementKeywords(KeywordGroup):
             if selected_value not in items and selected_label not in items:
                 raise AssertionError(err)
 
+    def list_selection_should_contain(self, locator, *items):
+        """Verifies the selection of select list identified by `locator` contains `*items`.
+
+        Select list keywords work on both lists and combo boxes. Key attributes for
+        select lists are `id` and `name`. See `introduction` for details about
+        locating elements.
+        """
+        items_str = items and "option(s) [ %s ]" % " | ".join(items) or "no options"
+        self._info("Verifying list '%s' has %s selected." % (locator, items_str))
+        items = list(items)
+        self.page_should_contain_list(locator)
+        select, options = self._get_select_list_options_selected(locator)
+        if not items and len(options) == 0:
+            return
+        selected_values = self._get_values_for_options(options)
+        selected_labels = self._get_labels_for_options(options)
+        err = "List '%s' should have contained selection [ %s ] but it was [ %s ]" \
+            % (locator, ' | '.join(items), ' | '.join(selected_labels))
+        count = 0
+        for item in items:
+            if item in selected_values + selected_labels:
+                count += 1
+        if count >= 1:
+            return
+        else:
+            raise AssertionError(err)
+
     def list_should_have_no_selections(self, locator):
         """Verifies select list identified by `locator` has no selections.
 
